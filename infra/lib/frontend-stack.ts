@@ -1,12 +1,12 @@
 import * as cdk from "aws-cdk-lib";
-import { Construct } from "constructs";
 import * as s3 from "aws-cdk-lib/aws-s3";
-import * as s3Deploy from "aws-cdk-lib/aws-s3-deployment";
+import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
+import { Construct } from "constructs";
 
 interface FrontendStackProps extends cdk.StackProps {
-  apiUrl: cdk.CfnOutput;
+  apiUrl: string;
 }
 
 export class FrontendStack extends cdk.Stack {
@@ -22,8 +22,8 @@ export class FrontendStack extends cdk.Stack {
       defaultBehavior: { origin: new origins.S3Origin(siteBucket) },
     });
 
-    new s3Deploy.BucketDeployment(this, "DeployWeb", {
-      sources: [s3Deploy.Source.asset("../apps/web/out")],
+    new s3deploy.BucketDeployment(this, "DeployWebsite", {
+      sources: [s3deploy.Source.asset("../apps/web/out")],
       destinationBucket: siteBucket,
       distribution,
       distributionPaths: ["/*"],

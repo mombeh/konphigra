@@ -4,12 +4,15 @@
   "type": "module",
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev",
+    "dev": "turbo run dev --parallel",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
     "lint:fix": "eslint . --fix",
-    "prepare": "husky"
+    "prepare": "husky",
+    "cdk": "cdk",
+    "build:web": "turbo run build --filter=web",
+    "build:api": "turbo run build --filter=api"
   },
   "devDependencies": {
     "eslint": "^9.38.0",
@@ -20,6 +23,10 @@
     "prettier": "^3.6.2",
     "turbo": "^2.5.8",
     "typescript": "5.9.2"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "2.215.0",
+    "constructs": "^10.0.0"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -36,6 +43,7 @@
   "packageManager": "npm@10.2.4",
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "infra/*"
   ]
 }
