@@ -2,7 +2,6 @@
 /dist
 /node_modules
 /build
-/out.js
 
 # Logs
 logs
