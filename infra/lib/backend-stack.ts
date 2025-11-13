@@ -11,7 +11,6 @@ export class BackendStack extends cdk.Stack {
     super(scope, id, props);
 
     const vpc = new ec2.Vpc(this, "ApiVpc", { maxAzs: 2 });
-
     const cluster = new ecs.Cluster(this, "ApiCluster", { vpc });
 
     const service = new ecsPatterns.ApplicationLoadBalancedFargateService(this, "ApiService", {
@@ -22,7 +21,7 @@ export class BackendStack extends cdk.Stack {
       publicLoadBalancer: true,
       taskImageOptions: {
         image: ecs.ContainerImage.fromRegistry("amazon/amazon-ecs-sample"),
-        containerPort: 4000,
+        containerPort: 80,
         environment: { NODE_ENV: "production" },
       },
     });

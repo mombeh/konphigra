@@ -14,8 +14,15 @@ export class FrontendStack extends cdk.Stack {
     super(scope, id, props);
 
     const siteBucket = new s3.Bucket(this, "WebBucket", {
-      websiteIndexDocument: "index.html",
       publicReadAccess: true,
+      blockPublicAccess: new s3.BlockPublicAccess({
+        blockPublicAcls: false,
+        blockPublicPolicy: false,
+        ignorePublicAcls: false,
+        restrictPublicBuckets: false,
+      }),
+      websiteIndexDocument: "index.html",
+      websiteErrorDocument: "index.html",
     });
 
     const distribution = new cloudfront.Distribution(this, "WebDistribution", {
