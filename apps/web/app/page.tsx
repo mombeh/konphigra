@@ -20,16 +20,20 @@ const ThemeImage = (props: Props) => {
   );
 };
 
-const sdk = new KonphigraSDK({
-  baseUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000",
-});
-
 export default async function Home() {
+  const sdk = new KonphigraSDK({
+    baseUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000",
+  });
+
   const users = await sdk.getUsers().catch(() => []);
   console.log("Fetched users:", users);
+
   return (
     <div className={styles.page}>
-      <UsersClient users={users} />
+      <div>
+        <h1>Users from SDK</h1>
+        <pre>{JSON.stringify(users, null, 2)}</pre>
+      </div>
       <main className={styles.main}>
         <ThemeImage
           className={styles.logo}
