@@ -1,6 +1,8 @@
 import Image, { type ImageProps } from "next/image";
 import { Button } from "@repo/ui/button";
 import styles from "./page.module.css";
+import { KonphigraSDK } from "@konphigra/sdk";
+import UsersClient from "./users-client";
 
 type Props = Omit<ImageProps, "src"> & {
   srcLight: string;
@@ -18,9 +20,20 @@ const ThemeImage = (props: Props) => {
   );
 };
 
-export default function Home() {
+export default async function Home() {
+  const sdk = new KonphigraSDK({
+    baseUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000",
+  });
+
+  const users = await sdk.getUsers().catch(() => []);
+  console.log("Fetched users:", users);
+
   return (
     <div className={styles.page}>
+      <div>
+        <h1>Users from SDK</h1>
+        <pre>{JSON.stringify(users, null, 2)}</pre>
+      </div>
       <main className={styles.main}>
         <ThemeImage
           className={styles.logo}
@@ -73,13 +86,7 @@ export default function Home() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
+          <Image aria-hidden src="/window.svg" alt="Window icon" width={16} height={16} />
           Examples
         </a>
         <a
@@ -87,13 +94,7 @@ export default function Home() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
+          <Image aria-hidden src="/globe.svg" alt="Globe icon" width={16} height={16} />
           Go to turborepo.com →
         </a>
       </footer>
