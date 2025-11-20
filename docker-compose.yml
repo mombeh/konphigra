@@ -1,37 +1,7 @@
-version: "3.9"
-
 services:
   api:
-    build: ./apps/api
-    container_name: config-api
-    ports:
-      - "4000:4000"
-    env_file:
-      - ./apps/api/.env
-    depends_on:
-      - db
-
-  web:
-    build: ./apps/web
-    container_name: config-web
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
-    env_file:
-      - ./apps/web/.env
-    depends_on:
-      - api
-
-  db:
-    image: postgres:15
-    container_name: config-db
-    environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: config_manager
-    ports:
-      - "5432:5432"
-    volumes:
-      - db_data:/var/lib/postgresql/data
-
-volumes:
-  db_data:
