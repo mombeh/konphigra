@@ -6,5 +6,5 @@ const app = new cdk.App();
 
 // FIRST STACK ONLY
 new NetworkStack(app, "Network-Stack", {
-  env: { account: "945799872792", region: "us-east-1" },
+  env: { account: "945799872792", region: "eu-north-1" },
 });
