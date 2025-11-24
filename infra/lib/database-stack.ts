@@ -16,17 +16,15 @@ export interface DatabaseStackProps extends StackProps {
 export class DatabaseStack extends Stack {
   public readonly instance: rds.DatabaseInstance;
   public readonly secret: secretsmanager.ISecret;
-  public readonly dbSecurityGroup: ec2.SecurityGroup;
-
+  public readonly dbSecurityGroup: ec2.ISecurityGroup;
   constructor(scope: Construct, id: string, props: DatabaseStackProps) {
     super(scope, id, props);
 
     const dbName = props.dbName ?? "konphigra";
 
-    this.dbSecurityGroup = new ec2.SecurityGroup(this, "DbSecurityGroup", {
+    this.dbSecurityGroup = new ec2.SecurityGroup(this, "DbSG", {
       vpc: props.vpc,
-      description: "Allow backend to connect to Postgres",
-      allowAllOutbound: true,
+      allowAllOutbound: false,
     });
 
     if (props.backendSecurityGroup) {

@@ -22,6 +22,6 @@ new BackendStack(app, "Backend-Stack", {
   env,
   vpc: network.vpc,
   dbSecret: database.secret,
-  dbSecurityGroup: database.dbSecurityGroup,
+  dbSecurityGroup: network.databaseSecurityGroup,
   dbHost: database.instance.instanceEndpoint.hostname,
 });

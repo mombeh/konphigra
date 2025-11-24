@@ -33,9 +33,8 @@ export class BackendStack extends cdk.Stack {
       "Allow backend to access Postgres"
     );
 
-    // Build image from your Dockerfile at project root
-    const image = ecs.ContainerImage.fromAsset("./", {
-      file: "Dockerfile", // root Dockerfile
+    const image = ecs.ContainerImage.fromAsset("../", {
+      exclude: ["infra/cdk.out", "cdk.out", "node_modules", ".git"],
     });
 
     const service = new ecs_patterns.ApplicationLoadBalancedFargateService(
@@ -55,10 +54,12 @@ export class BackendStack extends cdk.Stack {
           image,
           containerPort: 3000,
           environment: {
-            // DATABASE_URL constructed here
-            DATABASE_URL: `postgresql://${props.dbSecret.secretValueFromJson(
-              "username"
-            )}:${props.dbSecret.secretValueFromJson("password")}@${props.dbHost}:5432/konphigra`,
+            DB_HOST: props.dbHost,
+            DB_NAME: "konphigra",
+          },
+          secrets: {
+            DB_USER: ecs.Secret.fromSecretsManager(props.dbSecret, "username"),
+            DB_PASS: ecs.Secret.fromSecretsManager(props.dbSecret, "password"),
           },
         },
       }
