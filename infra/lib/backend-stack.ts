@@ -4,7 +4,6 @@ import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as ecs_patterns from "aws-cdk-lib/aws-ecs-patterns";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
-import * as iam from "aws-cdk-lib/aws-iam";
 
 interface BackendStackProps extends cdk.StackProps {
   vpc: ec2.IVpc;
@@ -33,8 +32,9 @@ export class BackendStack extends cdk.Stack {
       "Allow backend to access Postgres"
     );
 
+    // Build image from your Dockerfile at project root
     const image = ecs.ContainerImage.fromAsset("../", {
-      exclude: ["infra/cdk.out", "cdk.out", "node_modules", ".git"],
+      file: "Dockerfile",
     });
 
     const service = new ecs_patterns.ApplicationLoadBalancedFargateService(
