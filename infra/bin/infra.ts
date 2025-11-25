@@ -4,6 +4,7 @@ import * as cdk from "aws-cdk-lib";
 import { NetworkStack } from "../lib/network-stack";
 import { DatabaseStack } from "../lib/database-stack";
 import { AuthStack } from "../lib/auth-stack";
+import { BackendStack } from "../lib/backend-stack";
 
 const app = new cdk.App();
 
@@ -22,3 +23,15 @@ const database = new DatabaseStack(app, "Database-Stack", {
 const auth = new AuthStack(app, "Auth-Stack", {
   env,
 });
+
+const backend = new BackendStack(app, "Backend-Stack", {
+  env,
+  vpc: network.vpc,
+  dbSecurityGroup: database.dbSecurityGroup,
+  dbSecret: database.secret,
+  dbHost: database.instance.instanceEndpoint.hostname,
+});
+
+backend.addDependency(database);
+backend.addDependency(network);
+backend.addDependency(auth);

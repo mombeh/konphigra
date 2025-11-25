@@ -10,6 +10,11 @@ export class AppController {
     return this.appService.getUsersFromSDK();
   }
 
+  @Get('health')
+  health() {
+    return { status: 'ok' };
+  }
+
   @Get()
   getHello(): string {
     return this.appService.getHello();
