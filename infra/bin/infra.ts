@@ -5,7 +5,7 @@ import { NetworkStack } from "../lib/network-stack";
 import { DatabaseStack } from "../lib/database-stack";
 import { AuthStack } from "../lib/auth-stack";
 import { MonitoringStack } from "../lib/monitoring-stack";
-// import { BackendStack } from "../lib/backend-stack";
+import { BackendStack } from "../lib/backend-stack";
 
 const app = new cdk.App();
 
@@ -29,14 +29,14 @@ const monitoring = new MonitoringStack(app, "Monitoring-Stack", {
   env,
 });
 
-// const backend = new BackendStack(app, "Backend-Stack", {
-//   env,
-//   vpc: network.vpc,
-//   dbSecurityGroup: database.dbSecurityGroup,
-//   dbSecret: database.secret,
-//   dbHost: database.instance.instanceEndpoint.hostname,
-// });
+const backend = new BackendStack(app, "Backend-Stack", {
+  env,
+  vpc: network.vpc,
+  dbSecurityGroup: database.dbSecurityGroup,
+  dbSecret: database.secret,
+  dbHost: database.instance.instanceEndpoint.hostname,
+});
 
-// backend.addDependency(database);
-// backend.addDependency(network);
-// backend.addDependency(auth);
+backend.addDependency(database);
+backend.addDependency(network);
+backend.addDependency(auth);
