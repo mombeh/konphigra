@@ -27,20 +27,6 @@ export class DatabaseStack extends Stack {
       allowAllOutbound: false,
     });
 
-    if (props.backendSecurityGroup) {
-      this.dbSecurityGroup.addIngressRule(
-        props.backendSecurityGroup,
-        ec2.Port.tcp(5432),
-        "Allow backend services to connect to Postgres"
-      );
-    } else {
-      this.dbSecurityGroup.addIngressRule(
-        ec2.Peer.ipv4(props.vpc.vpcCidrBlock),
-        ec2.Port.tcp(5432),
-        "Allow VPC access"
-      );
-    }
-
     this.secret = new secretsmanager.Secret(this, "DbCredentialsSecret", {
       generateSecretString: {
         secretStringTemplate: JSON.stringify({ username: "konphigra_admin" }),

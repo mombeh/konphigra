@@ -34,7 +34,7 @@ export class BackendStack extends cdk.Stack {
     );
 
     // Build NestJS image
-    const image = ecs.ContainerImage.fromAsset("../");
+    const image = ecs.ContainerImage.fromAsset("../apps/api");
 
     const service = new ecs_patterns.ApplicationLoadBalancedFargateService(
       this,

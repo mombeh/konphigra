@@ -6,7 +6,7 @@ import { DatabaseStack } from "../lib/database-stack";
 import { AuthStack } from "../lib/auth-stack";
 import { MonitoringStack } from "../lib/monitoring-stack";
 import { BackendStack } from "../lib/backend-stack";
-import { FrontendStack } from "../lib/frontend-stack";
+// import { FrontendStack } from "../lib/frontend-stack";
 
 const app = new cdk.App();
 
@@ -38,7 +38,7 @@ backend.addDependency(database);
 backend.addDependency(network);
 backend.addDependency(auth);
 
-const frontend = new FrontendStack(app, "Frontend-Stack", {
-  env,
-  apiUrl: "https://placeholder.com",
-});
+// const frontend = new FrontendStack(app, "Frontend-Stack", {
+//   env,
+//   apiUrl: "https://placeholder.com",
+// });
