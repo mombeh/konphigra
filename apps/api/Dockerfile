@@ -9,7 +9,7 @@ COPY . .
 RUN npm install
 
 # Build API workspace
-RUN npm run build --workspace=@konphigra/api
+RUN npm run build 
 
 # ---- RUNNER ----
 FROM node:18-alpine

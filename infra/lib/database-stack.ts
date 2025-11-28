@@ -8,7 +8,6 @@ import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 
 export interface DatabaseStackProps extends StackProps {
   vpc: ec2.IVpc;
-  backendSecurityGroup?: ec2.ISecurityGroup;
   multiAz?: boolean;
   dbName?: string;
 }
@@ -63,9 +62,13 @@ export class DatabaseStack extends Stack {
     });
 
     this.instance = instance;
-
-    new cdk.CfnOutput(this, "DbSecretArn", { value: this.secret.secretArn });
-    new cdk.CfnOutput(this, "DbEndpoint", { value: instance.instanceEndpoint.hostname });
-    new cdk.CfnOutput(this, "DbPort", { value: instance.instanceEndpoint.port.toString() });
+  }
+  // ⭐ NEW METHOD
+  public allowConnectionFrom(sg: ec2.ISecurityGroup) {
+    this.dbSecurityGroup.addIngressRule(
+      sg,
+      ec2.Port.tcp(5432),
+      "Allow backend to connect to database"
+    );
   }
 }

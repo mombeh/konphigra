@@ -27,12 +27,6 @@ export class BackendStack extends cdk.Stack {
       allowAllOutbound: true,
     });
 
-    props.dbSecurityGroup.addIngressRule(
-      this.backendSG,
-      ec2.Port.tcp(5432),
-      "Allow backend to connect to Postgres"
-    );
-
     const image = ecs.ContainerImage.fromAsset("../apps/api");
 
     const service = new ecs_patterns.ApplicationLoadBalancedFargateService(
