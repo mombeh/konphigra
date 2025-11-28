@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 import * as cdk from "aws-cdk-lib";
+import { aws_ec2 as ec2 } from "aws-cdk-lib";
 
 import { NetworkStack } from "../lib/network-stack";
 import { DatabaseStack } from "../lib/database-stack";
 import { AuthStack } from "../lib/auth-stack";
 import { MonitoringStack } from "../lib/monitoring-stack";
 import { BackendStack } from "../lib/backend-stack";
-// import { FrontendStack } from "../lib/frontend-stack";
 
 const app = new cdk.App();
 
@@ -33,12 +33,3 @@ const backend = new BackendStack(app, "Backend-Stack", {
   dbSecret: database.secret,
   dbHost: database.instance.instanceEndpoint.hostname,
 });
-
-backend.addDependency(database);
-backend.addDependency(network);
-backend.addDependency(auth);
-
-// const frontend = new FrontendStack(app, "Frontend-Stack", {
-//   env,
-//   apiUrl: "https://placeholder.com",
-// });

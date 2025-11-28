@@ -13,6 +13,8 @@ interface BackendStackProps extends cdk.StackProps {
 }
 
 export class BackendStack extends cdk.Stack {
+  public readonly backendSG: ec2.SecurityGroup;
+
   constructor(scope: Construct, id: string, props: BackendStackProps) {
     super(scope, id, props);
 
@@ -20,20 +22,17 @@ export class BackendStack extends cdk.Stack {
       vpc: props.vpc,
     });
 
-    // Backend service security group
-    const backendSG = new ec2.SecurityGroup(this, "BackendSG", {
+    this.backendSG = new ec2.SecurityGroup(this, "BackendSG", {
       vpc: props.vpc,
       allowAllOutbound: true,
     });
 
-    // Allow ECS to access Postgres
     props.dbSecurityGroup.addIngressRule(
-      backendSG,
+      this.backendSG,
       ec2.Port.tcp(5432),
-      "Allow backend to access Postgres"
+      "Allow backend to connect to Postgres"
     );
 
-    // Build NestJS image
     const image = ecs.ContainerImage.fromAsset("../apps/api");
 
     const service = new ecs_patterns.ApplicationLoadBalancedFargateService(
@@ -48,7 +47,7 @@ export class BackendStack extends cdk.Stack {
         taskSubnets: {
           subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
         },
-        securityGroups: [backendSG],
+        securityGroups: [this.backendSG],
 
         taskImageOptions: {
           image,
@@ -67,12 +66,12 @@ export class BackendStack extends cdk.Stack {
         },
       }
     );
+
     service.targetGroup.configureHealthCheck({
       path: "/health",
       healthyHttpCodes: "200-399",
     });
 
-    // Allow ECS task to read DB secret
     props.dbSecret.grantRead(service.taskDefinition.taskRole);
   }
 }
