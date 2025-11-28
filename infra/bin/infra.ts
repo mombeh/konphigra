@@ -22,18 +22,9 @@ const database = new DatabaseStack(app, "Database-Stack", {
   vpc: network.vpc,
 });
 
-const auth = new AuthStack(app, "Auth-Stack", {
-  env,
-});
+const auth = new AuthStack(app, "Auth-Stack", { env });
 
-const monitoring = new MonitoringStack(app, "Monitoring-Stack", {
-  env,
-});
-
-const frontend = new FrontendStack(app, "Frontend-Stack", {
-  env,
-  apiUrl: "https://placeholder.com",
-});
+const monitoring = new MonitoringStack(app, "Monitoring-Stack", { env });
 
 const backend = new BackendStack(app, "Backend-Stack", {
   env,
@@ -46,3 +37,8 @@ const backend = new BackendStack(app, "Backend-Stack", {
 backend.addDependency(database);
 backend.addDependency(network);
 backend.addDependency(auth);
+
+const frontend = new FrontendStack(app, "Frontend-Stack", {
+  env,
+  apiUrl: "https://placeholder.com",
+});
