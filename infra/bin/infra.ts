@@ -14,7 +14,7 @@ const env = {
   region: "eu-north-1",
 };
 
-const network = new NetworkStack(app, "Network-Stack", { env });
+const network = new NetworkStack(app, "Network-Stack-Config", { env });
 
 const database = new DatabaseStack(app, "Database-Stack", {
   env,

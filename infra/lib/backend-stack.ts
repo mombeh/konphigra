@@ -2,6 +2,7 @@ import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as ecs from "aws-cdk-lib/aws-ecs";
+import * as path from "path";
 import * as ecs_patterns from "aws-cdk-lib/aws-ecs-patterns";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 
@@ -27,7 +28,10 @@ export class BackendStack extends cdk.Stack {
       allowAllOutbound: true,
     });
 
-    const image = ecs.ContainerImage.fromAsset("../apps/api");
+    const image = ecs.ContainerImage.fromAsset(path.join(__dirname, "../../apps/api"), {
+      file: "Dockerfile",
+      exclude: ["cdk.out", ".git", "infra", "node_modules"],
+    });
 
     const service = new ecs_patterns.ApplicationLoadBalancedFargateService(
       this,

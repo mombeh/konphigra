@@ -11,14 +11,13 @@ export class MonitoringStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: MonitoringStackProps) {
     super(scope, id, props);
 
-    // Log group for backend (ECS)
+    // Log group for bacend (ECS)
     const backendLogGroup = new logs.LogGroup(this, "BackendLogGroup", {
       logGroupName: "/konphigra/backend",
       retention: logs.RetentionDays.ONE_WEEK,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
-    // CloudWatch Dashboard
     const dashboard = new cloudwatch.Dashboard(this, "KonphigraDashboard", {
       dashboardName: "Konphigra-Monitoring",
     });
