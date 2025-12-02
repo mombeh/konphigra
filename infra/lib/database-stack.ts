@@ -63,12 +63,4 @@ export class DatabaseStack extends Stack {
 
     this.instance = instance;
   }
-  // ⭐ NEW METHOD
-  public allowConnectionFrom(sg: ec2.ISecurityGroup) {
-    this.dbSecurityGroup.addIngressRule(
-      sg,
-      ec2.Port.tcp(5432),
-      "Allow backend to connect to database"
-    );
-  }
 }
