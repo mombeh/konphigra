@@ -1,18 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { KonphigraSDK } from '@konphigra/sdk';
 
 @Injectable()
 export class AppService {
-  private sdk: KonphigraSDK;
-
-  constructor() {
-    this.sdk = new KonphigraSDK({
-      baseUrl: 'http://localhost:3000',
-    });
-  }
-
-  async getUsersFromSDK() {
-    return this.sdk.getUsers();
+  getUsersFromSDK() {
+    return ['test-user-1', 'test-user-2'];
   }
 
   getHello(): string {

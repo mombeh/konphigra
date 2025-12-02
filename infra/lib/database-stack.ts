@@ -8,45 +8,24 @@ import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 
 export interface DatabaseStackProps extends StackProps {
   vpc: ec2.IVpc;
-  backendSecurityGroup?: ec2.ISecurityGroup; // allow backend to connect
   multiAz?: boolean;
   dbName?: string;
 }
 
 export class DatabaseStack extends Stack {
-  public readonly clusterEndpoint: string;
+  public readonly instance: rds.DatabaseInstance;
   public readonly secret: secretsmanager.ISecret;
-  public readonly dbSecurityGroup: ec2.SecurityGroup;
-
+  public readonly dbSecurityGroup: ec2.ISecurityGroup;
   constructor(scope: Construct, id: string, props: DatabaseStackProps) {
     super(scope, id, props);
 
     const dbName = props.dbName ?? "konphigra";
 
-    // Security group for DB
-    this.dbSecurityGroup = new ec2.SecurityGroup(this, "DbSecurityGroup", {
+    this.dbSecurityGroup = new ec2.SecurityGroup(this, "DbSG", {
       vpc: props.vpc,
-      description: "Allow backend to connect to Postgres",
-      allowAllOutbound: true,
+      allowAllOutbound: false,
     });
 
-    // Allow backend security group to connect (if provided)
-    if (props.backendSecurityGroup) {
-      this.dbSecurityGroup.addIngressRule(
-        props.backendSecurityGroup,
-        ec2.Port.tcp(5432),
-        "Allow backend services to connect to Postgres"
-      );
-    } else {
-      // allow from within VPC as fallback (you may narrow this)
-      this.dbSecurityGroup.addIngressRule(
-        ec2.Peer.ipv4(props.vpc.vpcCidrBlock),
-        ec2.Port.tcp(5432),
-        "Allow VPC"
-      );
-    }
-
-    // Create credentials in Secrets Manager
     this.secret = new secretsmanager.Secret(this, "DbCredentialsSecret", {
       generateSecretString: {
         secretStringTemplate: JSON.stringify({ username: "konphigra_admin" }),
@@ -61,18 +40,14 @@ export class DatabaseStack extends Stack {
       subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
     };
 
-    // RDS instance
     const instance = new rds.DatabaseInstance(this, "KonphigraPostgres", {
       engine: rds.DatabaseInstanceEngine.postgres({
         version: rds.PostgresEngineVersion.VER_15,
       }),
-      instanceType: ec2.InstanceType.of(
-        ec2.InstanceClass.T4G,
-        ec2.InstanceSize.MEDIUM /* adjust */
-      ),
+      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T4G, ec2.InstanceSize.MEDIUM),
       vpc: props.vpc,
       vpcSubnets: subnetSelection,
-      credentials: rds.Credentials.fromSecret(this.secret), // uses secret
+      credentials: rds.Credentials.fromSecret(this.secret),
       multiAz: props.multiAz ?? false,
       publiclyAccessible: false,
       allocatedStorage: 100,
@@ -86,9 +61,6 @@ export class DatabaseStack extends Stack {
       autoMinorVersionUpgrade: true,
     });
 
-    // Export connection info
-    new cdk.CfnOutput(this, "DbSecretArn", { value: this.secret.secretArn });
-    new cdk.CfnOutput(this, "DbEndpoint", { value: instance.instanceEndpoint.hostname });
-    new cdk.CfnOutput(this, "DbPort", { value: instance.instanceEndpoint.port.toString() });
+    this.instance = instance;
   }
 }
