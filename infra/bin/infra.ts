@@ -33,9 +33,11 @@ const compute = new ComputeStack(app, "Compute-Stack", {
 
 const backendStack = new BackendStack(app, "Backend-Stack", {
   env,
-  vpc: network.vpc,
-  cluster: compute.cluster,
-  dbSecurityGroup: database.dbSecurityGroup,
-  dbSecret: database.secret,
-  dbHost: database.instance.instanceEndpoint.hostname,
+  vpc: network.vpc, // keep only ONE
+  applicationSG: network.applicationSecurityGroup,
+  albSG: network.albSecurityGroup,
+  dbSG: database.dbSecurityGroup,
+  dbSecretArn: database.secret.secretArn,
+  userPoolId: auth.userPool.userPoolId,
+  userPoolClientId: auth.userPoolClient.userPoolClientId,
 });
