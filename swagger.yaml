@@ -1,0 +1,227 @@
+openapi: 3.0.3
+info:
+  title: Config Manager Service API
+  version: 1.0.0
+  description: >
+    The Config Manager Service provides APIs for managing entities,
+    configuration values, versioning, audit logs, and environment-based configs.
+servers:
+  - url: https://api.example.com
+    description: Production API
+  - url: http://localhost:3000
+    description: Local Development
+
+security:
+  - CognitoAuth: []
+  - ApiKeyAuth: []
+
+components:
+  securitySchemes:
+    CognitoAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+
+  schemas:
+    Entity:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [project, user, organisation]
+        name:
+          type: string
+        metadata:
+          type: object
+      required: [id, type, name]
+
+    Config:
+      type: object
+      properties:
+        id:
+          type: string
+        entityId:
+          type: string
+        environment:
+          type: string
+          enum: [dev, staging, prod]
+        data:
+          type: object
+        version:
+          type: integer
+      required: [entityId, environment, data]
+
+    LogEntry:
+      type: object
+      properties:
+        id:
+          type: string
+        action:
+          type: string
+        entityId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        diff:
+          type: object
+
+paths:
+
+  /auth/me:
+    get:
+      summary: Get authenticated user info
+      security:
+        - CognitoAuth: []
+      responses:
+        '200':
+          description: Authenticated user profile
+
+  /entities:
+    get:
+      summary: List all entities
+      security:
+        - CognitoAuth: []
+      responses:
+        '200':
+          description: Array of entities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Entity'
+
+    post:
+      summary: Create a new entity
+      security:
+        - CognitoAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Entity'
+      responses:
+        '201':
+          description: Entity created
+
+  /entities/{id}:
+    get:
+      summary: Get entity by ID
+      security:
+        - CognitoAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+      responses:
+        '200':
+          description: Entity details
+
+    put:
+      summary: Update entity
+      security:
+        - CognitoAuth: []
+      parameters:
+        - $ref: '#/components/parameters/EntityId'
+      responses:
+        '200':
+          description: Updated entity
+
+    delete:
+      summary: Delete entity
+      security:
+        - CognitoAuth: []
+      responses:
+        '204':
+          description: Entity deleted
+
+  /configs:
+    post:
+      summary: Create config for an entity
+      security:
+        - ApiKeyAuth: []
+        - CognitoAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Config'
+      responses:
+        '201':
+          description: Created config
+
+  /configs/{entityId}/{environment}:
+    get:
+      summary: Retrieve config for an entity + environment
+      security:
+        - ApiKeyAuth: []
+        - CognitoAuth: []
+      parameters:
+        - name: entityId
+          in: path
+          required: true
+        - name: environment
+          in: path
+          required: true
+      responses:
+        '200':
+          description: Config details
+
+    put:
+      summary: Fully replace a config (PUT)
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Replaced config
+
+    patch:
+      summary: Partially update config (PATCH)
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Updated config
+
+    delete:
+      summary: Delete config
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '204':
+          description: Deleted
+
+  /logs:
+    get:
+      summary: List audit logs
+      security:
+        - CognitoAuth: []
+      responses:
+        '200':
+          description: Logs returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LogEntry'
+
