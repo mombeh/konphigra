@@ -1,101 +1,47 @@
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
+import path from "path";
 import * as ecs from "aws-cdk-lib/aws-ecs";
-import * as ecs_patterns from "aws-cdk-lib/aws-ecs-patterns";
-import * as logs from "aws-cdk-lib/aws-logs";
-import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
-import * as path from "path";
+import * as ecsPatterns from "aws-cdk-lib/aws-ecs-patterns";
 
-interface BackendStackProps extends cdk.StackProps {
+export interface BackendStackProps extends cdk.StackProps {
   vpc: ec2.IVpc;
-  cluster: ecs.ICluster;
-  dbSecurityGroup: ec2.ISecurityGroup;
-  dbSecret: secretsmanager.ISecret;
-  dbHost: string;
+  applicationSG: ec2.ISecurityGroup;
+  albSG: ec2.ISecurityGroup;
+  dbSecretArn: string;
+
+  userPoolId: string;
+  userPoolClientId: string;
 }
 
 export class BackendStack extends cdk.Stack {
-  public readonly backendSG: ec2.SecurityGroup;
+  public readonly service: ecsPatterns.ApplicationLoadBalancedFargateService;
 
   constructor(scope: Construct, id: string, props: BackendStackProps) {
     super(scope, id, props);
 
-    // MUST be assigned BEFORE being used
-    this.backendSG = new ec2.SecurityGroup(this, "BackendSG", {
+    // ECS Cluster
+    const cluster = new ecs.Cluster(this, "BackendCluster", {
       vpc: props.vpc,
-      allowAllOutbound: true,
     });
 
-    // ALLOW backend -> database
-    props.dbSecurityGroup.addIngressRule(
-      this.backendSG,
-      ec2.Port.tcp(5432),
-      "Allow backend to access PostgreSQL"
-    );
+    // Fargate Service with ALB
+    this.service = new ecsPatterns.ApplicationLoadBalancedFargateService(this, "BackendService", {
+      cluster,
+      desiredCount: 1,
+      cpu: 512,
+      memoryLimitMiB: 1024,
 
-    const logGroup = new logs.LogGroup(this, "BackendLogGroup", {
-      retention: logs.RetentionDays.ONE_WEEK,
-    });
-
-    const image = ecs.ContainerImage.fromAsset(path.join(__dirname, "../../apps/api"), {
-      file: "Dockerfile",
-      exclude: ["cdk.out", ".git", "infra", "node_modules"],
-    });
-
-    const service = new ecs_patterns.ApplicationLoadBalancedFargateService(
-      this,
-      "BackendFargateService",
-      {
-        cluster: props.cluster,
-        cpu: 256,
-        memoryLimitMiB: 512,
-        desiredCount: 1,
-        publicLoadBalancer: true,
-
-        taskSubnets: {
-          subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
+      taskImageOptions: {
+        image: ecs.ContainerImage.fromAsset(path.join(__dirname, "../../apps/api")),
+        containerPort: 3000,
+        environment: {
+          DB_SECRET_ARN: props.dbSecretArn,
+          USER_POOL_ID: props.userPoolId,
+          USER_POOL_CLIENT_ID: props.userPoolClientId,
         },
-
-        // VALID security group list
-        securityGroups: [this.backendSG],
-
-        taskImageOptions: {
-          image,
-          containerPort: 3000,
-
-          environment: {
-            DB_HOST: props.dbHost,
-            DB_PORT: "5432",
-            DB_NAME: "konphigra",
-            NODE_ENV: "production",
-          },
-
-          secrets: {
-            DB_USERNAME: ecs.Secret.fromSecretsManager(props.dbSecret, "username"),
-            DB_PASSWORD: ecs.Secret.fromSecretsManager(props.dbSecret, "password"),
-          },
-
-          logDriver: ecs.LogDrivers.awsLogs({
-            logGroup,
-            streamPrefix: "backend",
-          }),
-        },
-      }
-    );
-
-    service.targetGroup.configureHealthCheck({
-      path: "/health",
-      healthyHttpCodes: "200-399",
-    });
-
-    service.service.autoScaleTaskCount({
-      minCapacity: 1,
-      maxCapacity: 3,
-    });
-
-    new cdk.CfnOutput(this, "BackendURL", {
-      value: service.loadBalancer.loadBalancerDnsName,
+      },
     });
   }
 }

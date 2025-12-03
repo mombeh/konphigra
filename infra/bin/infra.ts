@@ -6,7 +6,7 @@ import { DatabaseStack } from "../lib/database-stack";
 import { AuthStack } from "../lib/auth-stack";
 import { MonitoringStack } from "../lib/monitoring-stack";
 import { BackendStack } from "../lib/backend-stack";
-import { ComputeStack } from "../lib/compute-stack";
+// import { ComputeStack } from "../lib/compute-stack";
 
 const app = new cdk.App();
 
@@ -26,16 +26,17 @@ const auth = new AuthStack(app, "Auth-Stack", { env });
 
 const monitoring = new MonitoringStack(app, "Monitoring-Stack", { env });
 
-const compute = new ComputeStack(app, "Compute-Stack", {
-  env,
-  vpc: network.vpc,
-});
+// const compute = new ComputeStack(app, "Compute-Stack", {
+//   env,
+//   vpc: network.vpc,
+// });
 
 const backendStack = new BackendStack(app, "Backend-Stack", {
   env,
-  vpc: network.vpc,
-  cluster: compute.cluster,
-  dbSecurityGroup: database.dbSecurityGroup,
-  dbSecret: database.secret,
-  dbHost: database.instance.instanceEndpoint.hostname,
+  vpc: network.vpc, // keep only ONE
+  applicationSG: network.applicationSecurityGroup,
+  albSG: network.albSecurityGroup,
+  dbSecretArn: database.secret.secretArn,
+  userPoolId: auth.userPool.userPoolId,
+  userPoolClientId: auth.userPoolClient.userPoolClientId,
 });

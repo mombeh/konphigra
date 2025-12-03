@@ -1,6 +1,6 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, UseGuards, Req } from '@nestjs/common';
 import { AppService } from './app.service';
-
+import { CognitoGuard } from './auth/auth.guard';
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
@@ -18,5 +18,11 @@ export class AppController {
   @Get()
   getHello(): string {
     return this.appService.getHello();
+  }
+
+  @UseGuards(CognitoGuard)
+  @Get('me')
+  getProfile(@Req() req) {
+    return req.user;
   }
 }

@@ -25,6 +25,7 @@
     "typescript": "5.9.2"
   },
   "dependencies": {
+    "@nestjs/config": "^4.0.2",
     "aws-cdk-lib": "2.215.0",
     "constructs": "^10.0.0"
   },
