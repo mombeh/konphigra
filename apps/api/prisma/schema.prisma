@@ -1,0 +1,70 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id      String   @id @default(uuid())
+  email   String   @unique
+  role    String
+  configs Config[] @relation("ConfigCreatedBy")
+
+  // FIXED
+  updatedConfigs Config[] @relation("ConfigUpdatedBy")
+
+  versions  ConfigVersion[]
+  projects  Project[]
+  createdAt DateTime        @default(now())
+}
+
+model Project {
+  id           String        @id @default(cuid())
+  name         String
+  description  String?
+  environments Environment[]
+  createdBy    User?         @relation(fields: [createdById], references: [id])
+  createdById  String?
+  createdAt    DateTime      @default(now())
+}
+
+model Environment {
+  id        String   @id @default(cuid())
+  name      String
+  project   Project  @relation(fields: [projectId], references: [id])
+  projectId String
+  configs   Config[]
+  createdAt DateTime @default(now())
+}
+
+model Config {
+  id            String      @id @default(cuid())
+  key           String
+  value         String
+  description   String?
+  environment   Environment @relation(fields: [environmentId], references: [id])
+  environmentId String
+  createdBy     User?       @relation("ConfigCreatedBy", fields: [createdById], references: [id])
+  createdById   String?
+
+  // FIXED - matches User
+  updatedBy User? @relation("ConfigUpdatedBy", fields: [updatedById], references: [id])
+
+  updatedById String?
+  versions    ConfigVersion[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model ConfigVersion {
+  id          String   @id @default(cuid())
+  config      Config   @relation(fields: [configId], references: [id])
+  configId    String
+  oldValue    String?
+  newValue    String
+  changedBy   User?    @relation(fields: [changedById], references: [id])
+  changedById String?
+  changedAt   DateTime @default(now())
+}
